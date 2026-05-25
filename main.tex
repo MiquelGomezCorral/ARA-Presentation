@@ -154,14 +154,14 @@
     \begin{column}{0.46\textwidth}
       \includegraphics[width=\textwidth]{images/UPENN-GBM-00465.png}
 
-      \begin{block}{MRI 3D multimodal glioblastoma}
+      \begin{block}{MRI 3D}
         \small
-        \textbf{T1}: anatomía estructural sana \\
-        \textbf{T1ce}: tumor activo (realce de contraste) \\
-        \textbf{T2}: contenido de agua / líquido \\
-        \textbf{FLAIR}: edema peritumoral \\
-        \textbf{Tabulares}: Datos clínicos \\
-        \textbf{Radiómicos}: Características extraídas de la imagen
+        \textbf{Procesadas}: Alineadas y sin cráneo \\
+        \vspace{0.3em}
+        \textbf{T1}: Anatomía estructural sana \\
+        \textbf{T1ce}: Tumor activo \\
+        \textbf{T2}: Contenido de agua / líquido \\
+        \textbf{FLAIR}: Edema peritumoral \\
       \end{block}
     \end{column}
   \end{columns}
@@ -181,9 +181,9 @@
       \medskip
       \textbf{Tres modalidades de entrada}
       \begin{itemize}
-        \item \textbf{MRI 3D}: 4 secuencias (T1, T1Gd, T2, FLAIR)
+        \item \textbf{MRI 3D}: 4 secuencias T1, T1Gd, T2, FLAIR
         \item \textbf{Clínicos}: edad, género, KPS, IDH1, MGMT, GTR
-        \item \textbf{Radiómicos}: 144 \textit{features} por región (ED, ET, NC)
+        \item \textbf{Radiómicos}: 144 \textit{features} por región ED, ET, NC
       \end{itemize}
 
       \medskip
@@ -325,7 +325,7 @@
         \midrule
         Pacientes              & 1251 \\
         Secuencias MRI         & 4 (T1, T1ce, T2, FLAIR) \\
-        Preprocesado           & Co-registrado, sin cráneo \\
+        Preprocesado           & Alineado, sin cráneo \\
         Segmentación           & Disponible (no usada) \\
         \bottomrule
       \end{tabular}
