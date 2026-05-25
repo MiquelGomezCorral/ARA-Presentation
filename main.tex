@@ -55,10 +55,9 @@
 % ============================================================
 % Title
 % ============================================================
-\title[Clasificación Multimodal Robusta]{Clasificación Multimodal de Esperanza de Vida\\\large con Robustez ante Datos Faltantes}
-\subtitle{ARA --- Aprendizaje y Reconocimiento de Patrones}
+\title[Clasificación multimodal robusta]{Clasificación multimodal de esperanza de vida\\\large con robustez ante datos faltantes}
+\subtitle{ARA}
 \author[Gómez \& Pacheco]{Andrés Pacheco Millán \and Miquel Gómez Corral}
-
 \institute[UPV]{Máster en Inteligencia Artificial,
            Reconocimiento de Formas e Imagen Digital\\
            Universitat Politècnica de València}
@@ -70,7 +69,8 @@
 \begin{frame}[plain]
   \titlepage
   \begin{tikzpicture}[remember picture, overlay]
-    \node[anchor=south east, font=\small] at ([xshift=-1.2cm, yshift=0.6cm]current page.south east) {Miquel Gómez Corral $\cdot$ Andrés Pacheco Millán};
+    \node[anchor=south east, font=\small] at ([xshift=-1.2cm, yshift=0.6cm]current page.south east)
+      {Miquel Gómez Corral $\cdot$ Andrés Pacheco Millán};
   \end{tikzpicture}
 \end{frame}
 
@@ -82,7 +82,7 @@
         \item Introducción y motivación
         \item Trabajo relacionado
         \item Descripción de la tarea
-        \item Modalidades de entrada
+        \item Dataset
         \item Arquitectura del modelo
       \end{enumerate}
     \end{column}
@@ -91,7 +91,6 @@
         \item Nuestras contribuciones
         \item Diseño experimental
         \item Resultados
-        \item Discusión
         \item Conclusiones y trabajo futuro
       \end{enumerate}
     \end{column}
@@ -99,321 +98,254 @@
 \end{frame}
 
 % ============================================================
-\section{Introducción}
+\section{Introducción y motivación}
 
-\begin{frame}{El problema: predecir sin tener todos los datos}
-  \begin{columns}[T]
-    \begin{column}{0.55\textwidth}
-      \vspace{0.3em}
-      En la práctica clínica \hl{rara vez se dispone de todas las pruebas} de un paciente al momento de decidir.
+\begin{frame}{Introducción y motivación}
+    En la práctica clínica \hl{rara vez se dispone de todos los datos} de un paciente al momento de decidir.
 
-      \medskip
-      \textbf{¿Por qué faltan datos?}
-      \begin{itemize}
-        \item Urgencia: no hay tiempo para todas las secuencias MRI
-        \item Fallos de equipamiento o captura
-        \item Paciente inestable o no colaborador
-        \item Coste económico de pruebas adicionales
-        \item Registros incompletos o perdidos
-      \end{itemize}
+    \medskip
+    \textbf{¿Por qué faltan datos?}
+    \begin{itemize}
+      \item Urgencia o coste: no siempre hay tiempo o recursos para todas las secuencias MRI
+      \item Fallos técnicos o paciente no colaborador
+      \item Registros incompletos o perdidos
+    \end{itemize}
 
-      \medskip
-      \begin{block}{Objetivo}
-        Predecir la esperanza de vida en glioblastoma con un modelo \hl{robusto a cualquier patrón de datos faltantes}, sin reentrenar.
-      \end{block}
-    \end{column}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{images/UPENN-GBM-00465.png}
-      \vspace{0.5em}
-
-      {\small\textit{MRI 3D multimodal --- glioblastoma\\(UPenn-GBM)}}
-
-      \vspace{0.8em}
-      \begin{alertblock}{Pregunta clave}
-        \small ¿Qué datos son \textit{realmente} imprescindibles para un buen diagnóstico?
-      \end{alertblock}
-    \end{column}
-  \end{columns}
+    \medskip
+    \begin{block}{Objetivo}
+      Predecir la esperanza de vida en glioblastoma con un modelo \hl{robusto ante datos faltantes}.
+    \end{block}
 \end{frame}
 
 % ============================================================
-\section{Trabajo relacionado}
+\section{Dataset}
 
-\begin{frame}{Punto de partida: Gomaa et al.\ (2024)}
+\begin{frame}{Dataset UPenn-GBM}
   \begin{columns}[T]
     \begin{column}{0.50\textwidth}
-      \textit{\small Comprehensive multimodal deep learning survival prediction enabled by a transformer architecture}
-      \medskip
-
-      \textbf{Arquitectura propuesta}
-      \begin{itemize}
-        \item ViT 3D + \textit{self-supervised pretraining}\\(contrastive + reconstruction)
-        \item Fusión imagen$\leftrightarrow$clínica vía \hl{cross-attention}
-        \item 4 secuencias MRI + datos clínico-moleculares
-        \item Validado en 3 centros independientes
-      \end{itemize}
-
-      \medskip
-      \textbf{Nuestra base}: tomamos esta arquitectura y la extendemos para \hl{tolerar datos faltantes} y aprovechar nuevas modalidades.
-    \end{column}
-    \begin{column}{0.46\textwidth}
-      \centering
-      \footnotesize
-      \textbf{Resultados originales (test UPenn)}
-      \medskip
-
-      \begin{tabular}{llc}
+      \centering\footnotesize
+      \begin{tabular}{lr}
         \toprule
-        \textbf{Datos} & \textbf{Modelo} & $\mathbf{C_{dt}}$ \\
+        \textbf{Variable} & \textbf{Valor} \\
         \midrule
-        Clínicos & CoxPH        & 0.667 \\
-        Clínicos & DeepSurv     & 0.644 \\
-        \rowcolor{lightbg}
-        Clínicos & Transformer  & 0.667 \\
+        Pacientes / muestras    & 603 / 630 \\
+        Edad media              & 62.7 $\pm$ 12.5 años \\
+        Género (M\,/\,F)        & 378 / 252 \\
+        Supervivencia media     & 496 días \\
         \midrule
-        Imagen   & ViT \textit{end-to-end} & 0.622 \\
         \rowcolor{lightbg}
-        Imagen   & Transformer + SSL & 0.645 \\
-        \midrule
-        Combi.   & CNN + CoxPH  & 0.671 \\
+        \textbf{Clase 0 ($\leq$12m)} & \textbf{305} \\
         \rowcolor{lightbg}
-        \textbf{Combi.} & \textbf{Transformer} & \textbf{0.707} \\
+        \textbf{Clase 1 ($>$12m)}    & \textbf{339} \\
         \bottomrule
       \end{tabular}
 
-      \vspace{0.7em}
-      {\scriptsize La fusión multimodal \textbf{supera consistentemente} a cualquier modalidad por separado.}
+      \vspace{0.8em}
+      \begin{tabular}{lrr}
+        \toprule
+        \textbf{Split} & \textbf{Pacientes} & \textbf{\%} \\
+        \midrule
+        Entrenamiento & 482 & 80\% \\
+        Validación    &  60 & 10\% \\
+        Test          &  61 & 10\% \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \includegraphics[width=\textwidth]{images/UPENN-GBM-00465.png}
+
+      \begin{block}{MRI 3D multimodal glioblastoma}
+        \small
+        \textbf{T1}: anatomía estructural sana \\
+        \textbf{T1ce}: tumor activo (realce de contraste) \\
+        \textbf{T2}: contenido de agua / líquido \\
+        \textbf{FLAIR}: edema peritumoral \\
+        \textbf{Tabulares}: Datos clínicos \\
+        \textbf{Radiómicos}: Características extraídas de la imagen
+      \end{block}
     \end{column}
   \end{columns}
 \end{frame}
+
 
 % ============================================================
 \section{Descripción de la tarea}
 
-\begin{frame}{Dataset UPenn-GBM y tarea}
-  \begin{columns}[T]
-    \begin{column}{0.46\textwidth}
-      \textbf{Datos disponibles por paciente}
-      \begin{itemize}
-        \item 4 secuencias MRI 3D: T1, T1Gd, T2, FLAIR
-        \item Datos clínicos (edad, género, KPS, IDH1, MGMT, GTR)
-        \item Características radiómicas extraídas de las MRI
-      \end{itemize}
-
-      \medskip
-      \textbf{Tarea: clasificación binaria}
+\begin{frame}{Descripción de la tarea}
+      \textbf{Clasificación binaria de supervivencia}
       \begin{itemize}
         \item \hl{Clase 1} --- supervivencia $>$ 12 meses
         \item \hl{Clase 0} --- supervivencia $\leq$ 12 meses
       \end{itemize}
 
       \medskip
-      \begin{block}{}
-        \small Tras descartar visitas duplicadas: \textbf{630 muestras de 603 pacientes}. Clases prácticamente balanceadas.
+      \textbf{Tres modalidades de entrada}
+      \begin{itemize}
+        \item \textbf{MRI 3D}: 4 secuencias (T1, T1Gd, T2, FLAIR)
+        \item \textbf{Clínicos}: edad, género, KPS, IDH1, MGMT, GTR
+        \item \textbf{Radiómicos}: 144 \textit{features} por región (ED, ET, NC)
+      \end{itemize}
+
+      \medskip
+      \begin{block}{El reto central}
+        \small En inferencia, \textbf{cualquier combinación de estas entradas puede estar ausente}. El modelo debe funcionar bien en todos los casos, sin lógica condicional codificada a mano.
       \end{block}
-    \end{column}
+\end{frame}
+
+% ============================================================
+\section{Trabajo relacionado}
+
+\begin{frame}{Trabajo relacionado}
+  \begin{columns}[T]
     \begin{column}{0.52\textwidth}
+      \textbf{Gomaa et al.\ (2024)}\\
+      \textit{\small Comprehensive multimodal deep learning survival prediction enabled by a transformer architecture}
+
+      \medskip
+  \begin{itemize}
+    \item Dos vistas con \textit{cutout} y \textit{patch-swapping}
+    \item Pretraining auto-supervisado:
+    \begin{itemize}
+      \item \textit{Contrastive Learning}: ambas representaciones similares entre sí
+      \item \textit{Context Reconstruction}: capacidad de reconstruir la imagen original
+    \end{itemize}
+    \item \hl{Cross-attention} entre características fisiológicas y características extraídas del ViT
+  \end{itemize}
+
+  \medskip
+  \textbf{Punto de partida}: tomamos esta arquitectura y la extendemos para \hl{tolerar datos faltantes} e incorporar radiómicos como nueva modalidad.
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \fbox{\includegraphics[width=\textwidth]{images/gomaa_architecture.png}}
+      \vspace{0.2em}
+      {\scriptsize\textit{Arquitectura original de Gomaa et al.\ (2024).}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+% ============================================================
+\begin{frame}{Arquitectura — Propuesta inicial}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \small
+      \textbf{Fusión vía Cross-Attention}
+      \begin{itemize}
+        \item Radiómicos atienden a características del ViT
+      \end{itemize}
+
+      \medskip
+      \textbf{\color{red}Limitaciones}
+      \begin{itemize}
+        \item Radiómicos extraídos \textbf{de la segmentación}: información redundante con la imagen MRI
+        \item Sin imagen, el cross-attention \textbf{no tiene tokens} a los que atender $\to$ el módulo colapsa
+        \item La fusión no distingue si una modalidad \textbf{falta o está presente}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \fbox{\includegraphics[width=\textwidth]{images/init.png}}
+      \vspace{0.3em}
+      {\scriptsize\textit{Cross-attention entre imagen (azul) y clínicos (morado).}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Arquitectura — Gated Fusion}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \small
+      \textbf{Puerta lógica por dimensión}
+      \begin{itemize}
+        \item Sigmoid \textbf{por dimensión}: cada canal aprende a incluirse o excluirse
+        \item Si falta alguna modalidad, el gate aprende a \textbf{anularla}
+      \end{itemize}
+
+      \small
+      \[
+        \mathbf{h} = (1-\sigma)\odot\mathbf{r} + \sigma\odot\mathbf{v}
+      \]
+
+      \vspace{0.1em}
+      \textbf{\color{teal}Ventajas}
+      \begin{itemize}
+        \item Tolera ausencia de modalidades sin degradar el pipeline
+        \item El gate aprende a ignorar redundancia imagen-radiómicos
+        \item Añade modalidad nueva sin romper la arquitectura base
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \fbox{\includegraphics[width=\textwidth]{images/final.png}}
+      % \vspace{0.3em}
+      {\scriptsize\textit{Gated Fusion (verde) integra radiómicos antes del cross-attention.}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Nuestras contribuciones}
+
+\begin{frame}{Nuestras contribuciones}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Robustez ante datos faltantes}
+      \begin{itemize}
+        \item \hl{Data dropout}: simulación sistemática de ausencias durante el entrenamiento
+        \item El modelo aprende a funcionar con \textbf{cualquier combinación} de modalidades
+      \end{itemize}
+
+      \medskip
+      \textbf{Nueva modalidad: radiómicos}
+      \begin{itemize}
+        \item Gestionados por un \hl{sigmoid gate}: el modelo decide cuándo y cuánto usarlos
+        \item Si la modalidad falta, el gate la anula automáticamente
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+
+      \medskip
+      \begin{exampleblock}{Resultado}
+        \small El modelo acepta \textbf{cualquier combinación de entradas} en inferencia, sin necesidad de reentrenar.
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+% ============================================================
+\begin{frame}{Dataset Extra: BraTS 2021}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
       \centering\footnotesize
       \begin{tabular}{lr}
         \toprule
         \textbf{Variable} & \textbf{Valor} \\
         \midrule
-        Pacientes / muestras                & 603 / 630 \\
-        Edad media                          & 62.7 $\pm$ 12.5 años \\
-        Género (M\,/\,F)                    & 378 / 252 \\
-        Supervivencia media                 & 496 días \\
-        IDH1 mutado / wildtype              & 19 / 514 \\
-        MGMT metilado / no metilado         & 115 / 160 \\
-        Resección total (GTR)               & 362 (57.5\%) \\
-        \midrule
-        \rowcolor{lightbg}
-        \textbf{Clase 0 ($\leq$12m)}        & \textbf{305} \\
-        \rowcolor{lightbg}
-        \textbf{Clase 1 ($>$12m)}           & \textbf{339} \\
+        Pacientes              & 1251 \\
+        Secuencias MRI         & 4 (T1, T1ce, T2, FLAIR) \\
+        Preprocesado           & Co-registrado, sin cráneo \\
+        Segmentación           & Disponible (no usada) \\
         \bottomrule
       \end{tabular}
 
       \vspace{0.8em}
-      \begin{block}{Complejidad}
-        \scriptsize Dataset \textit{moderado}, alta variabilidad biológica, múltiples fuentes heterogéneas.\\Predecir un año de vida no es trivial.
+      \begin{itemize}
+        \item Tiene el mismo formato: También está sin cráneo.
+        \item Contiene $\times2$ datos que UPenn + diversidad multi-institucional\\
+        \item Mejor representación espacial y generalización.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Autosupervisado --- sin etiquetas}
+        \small
+        Las anotaciones expertas (necrosis, edema, tumor activo) \textbf{se descartan} en SSL.
+        El ViT aprende geometría y texturas cerebrales sin supervisión humana.
       \end{block}
+
     \end{column}
   \end{columns}
-\end{frame}
-
-% ============================================================
-\section{Modalidades de entrada}
-
-\begin{frame}{Tres modalidades, una arquitectura}
-  \begin{columns}[T]
-    \begin{column}{0.32\textwidth}
-      \begin{block}{\centering Imagen MRI 3D}
-        \centering
-        \includegraphics[width=0.85\textwidth]{images/UPENN-GBM-00465.png}
-        \vspace{0.3em}
-        \small
-        \begin{itemize}
-          \item 4 canales: T1, T1Gd, T2, FLAIR
-          \item Volumen reducido a\\$96^3$ vóxeles\\{\scriptsize (memoria / cómputo)}
-          \item \textbf{Salida:} 217 tokens
-        \end{itemize}
-      \end{block}
-    \end{column}
-    \begin{column}{0.32\textwidth}
-      \begin{block}{\centering Datos clínicos}
-        \vspace{0.3em}
-        \small
-        \begin{itemize}
-          \item Género, edad, KPS
-          \item IDH1, MGMT, GTR
-          \item \textit{One-hot} + normalización $[-1, 1]$
-          \item \textbf{14 \textit{features}}
-          \item \textbf{Salida:} 8 tokens
-        \end{itemize}
-        \vspace{0.3em}
-        {\scriptsize Falta $\to$ cero + \textit{bit flag} + \texttt{missing\_emb} aprendido}
-      \end{block}
-    \end{column}
-    \begin{column}{0.32\textwidth}
-      \begin{block}{\centering Radiómicos}
-        \vspace{0.3em}
-        \small
-        \begin{itemize}
-          \item 144 \textit{features} por\\(región, modalidad)
-          \item 3 regiones: ED, ET, NC
-          \item 4 modalidades MRI
-          \item \textbf{Salida:} 12 tokens
-        \end{itemize}
-        \vspace{0.3em}
-        {\scriptsize Complementan la imagen cuando faltan canales MRI}
-      \end{block}
-    \end{column}
-  \end{columns}
-
-  \vspace{0.7em}
-  \begin{center}
-    \small\textit{El paper original descartaba los radiómicos por considerarlos ruido.\\Nosotros los incorporamos como modalidad complementaria gestionada por un \textbf{sigmoid gate}.}
-  \end{center}
-\end{frame}
-
-% ============================================================
-\section{Arquitectura}
-
-\begin{frame}{Arquitectura: visión general}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \textbf{Fase 1 --- Pretraining auto-supervisado}
-      \begin{itemize}
-        \item Dos vistas aumentadas del mismo volumen
-        \item \textit{Contrastive loss} (NT-Xent) + \textit{context reconstruction}
-        \item Sobre BraTS (1\,251 vol.) o UPenn (603 vol.)
-      \end{itemize}
-
-      \medskip
-      \textbf{Fase 2 --- Clasificación binaria}
-      \begin{itemize}
-        \item Encoder ViT congelado $\to$ \textit{tokens} de imagen
-        \item Fusión con radiómicos vía \hl{sigmoid gate}
-        \item \hl{Cross-attention} bidireccional\\imagen $\leftrightarrow$ clínicos
-        \item \textit{Attention pooling} + clasificador binario
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \centering
-      \fbox{\includegraphics[width=\textwidth]{images/architecture.png}}
-
-      \vspace{0.5em}
-      {\scriptsize\textit{Pipeline en dos fases: pretraining SSL (arriba) y predicción multimodal (abajo).}}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Cómo manejamos los datos faltantes}
-  \begin{columns}[T]
-    \begin{column}{0.50\textwidth}
-      \begin{block}{Sigmoid gate (radiómicos $\leftrightarrow$ imagen)}
-        \small
-        \[
-          \sigma = \mathrm{sigmoid}\!\bigl(\mathbf{W}\,[\,\text{img};\,\text{rad}\,]\bigr)
-        \]
-        \[
-          \text{fused} = \text{img}\odot\sigma \;+\; \text{rad}\odot(1-\sigma)
-        \]
-        Decide \textbf{por token y por dimensión} cuánta información radiómica incorporar.
-
-        \medskip
-        Si los radiómicos faltan $\to$ \textbf{rad}$\approx 0$ $\to$ $\sigma\to 1$\\ $\to$ imagen pura, sin código condicional.
-      \end{block}
-
-      \medskip
-      \begin{block}{\textit{Cross-attention} bidireccional}
-        \small
-        Cada modalidad se enriquece atendiendo a la otra.\\
-        Pooling final + MLP de clasificación.
-      \end{block}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Sin ramas \texttt{if}: todo vía máscaras aprendidas}
-        \small
-        \begin{description}
-          \item[\texttt{missing\_emb}] \textit{embedding} aprendido que sustituye \textit{features} tabulares ausentes
-          \item[\texttt{image\_mask\_proj}] inyecta la presencia/ausencia de canales MRI directamente en el \textit{gate}
-          \item[Máscaras de radiómicos] tokens inválidos $\to$ cero, ignorados por \textit{mean pool}
-        \end{description}
-      \end{block}
-
-      \vspace{0.4em}
-      \begin{exampleblock}{Principio de diseño}
-        \small El modelo aprende \textbf{qué hacer cuando algo falta}, en vez de seguir reglas codificadas a mano.
-      \end{exampleblock}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-% ============================================================
-\section{Contribuciones}
-
-\begin{frame}{Nuestras contribuciones sobre el paper base}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \textbf{Robustez ante datos faltantes}
-      \begin{itemize}
-        \item \hl{Data dropout}: simulación sistemática de ausencias durante el entrenamiento (MRI, tabular, radiómicos)
-        \item \hl{Mask wiring}: el modelo \textit{sabe qué falta}\\
-              vía \texttt{missing\_emb} e \texttt{image\_mask\_proj}
-        \item Manejo de ausencias \textbf{sin condicionales}: máscaras + \textit{gates} aprendidos
-      \end{itemize}
-
-      \medskip
-      \textbf{Nueva modalidad}
-      \begin{itemize}
-        \item \hl{Radiómicos} como complemento (no ruido): el \textit{sigmoid gate} decide cuándo y cuánto usarlos
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \textbf{Mejor representación de la imagen}
-      \begin{itemize}
-        \item \hl{Embeddings posicionales 3D}: rejilla $6^3$ aprendida que preserva la localidad espacial
-        \item \hl{Pretraining con BraTS} (1\,251 vol.) para diversificar el SSL
-        \item Aumentaciones de intensidad adaptadas al dominio BraTS
-      \end{itemize}
-
-      \medskip
-      \textbf{Adaptación de la tarea}
-      \begin{itemize}
-        \item Clasificación binaria a 12 meses (en lugar de curva de supervivencia)
-      \end{itemize}
-    \end{column}
-  \end{columns}
-
-  \vspace{0.6em}
-  \begin{center}
-    \begin{exampleblock}{\centering Resultado}
-      \centering\small
-      El modelo generaliza a \textbf{cualquier patrón de datos faltantes} en inferencia, sin reentrenar.
-    \end{exampleblock}
-  \end{center}
 \end{frame}
 
 % ============================================================
@@ -422,51 +354,31 @@
 \begin{frame}{Diseño experimental}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
-      \textbf{Partición de datos (UPenn-GBM)}
-      \medskip
-
-      \centering
-      \begin{tabular}{lrr}
-        \toprule
-        \textbf{Conjunto} & \textbf{Pacientes} & \textbf{\%} \\
-        \midrule
-        Entrenamiento & 482 & 80\% \\
-        Validación    & 60  & 10\% \\
-        Test          & 61  & 10\% \\
-        \bottomrule
-      \end{tabular}
+      \textbf{Fase 1 — Pretraining SSL}
+      \begin{itemize}
+        \item \textit{Contrastive learning} y \textit{Context reconstruction}
+        \item BraTS 2021: 1251
+        \item Upenn-GBM.
+      \end{itemize}
 
       \medskip
-      \raggedright
+      \textbf{Fase 2 — Clasificación}
+      \begin{itemize}
+        \item ViT congelado, 5 épocas
+        \item Pocas épocas para evitar que el modelo sobreajuste en validación
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
       \textbf{Simulación de datos faltantes}
       \begin{itemize}
-        \item MRI: $\sim$5\% por canal
-        \item Radiómicos: $\sim$10\% por región
-        \item Tabulares: $\sim$10\% por grupo
-      \end{itemize}
-
-      \smallskip
-      {\scriptsize \textit{Dynamic dropout} en \textit{train}; \textit{static dropout} fijo en test (reproducible).}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \textbf{Entrenamiento en dos fases}
-
-      \medskip
-      \textbf{1. Pretraining SSL}
-      \begin{itemize}
-        \item BraTS (1\,251 vol.) o UPenn (603 vol.)
-        \item \textit{Batch} 32, AdamW $lr = 10^{-4}$, 20--50 épocas
-        \item Aumentaciones: \textit{flip}, \textit{rotate}, \textit{noise}, \textit{crop}, \textit{patch swap}, \textit{cutout}
+        \item MRI y radiómicos: $\sim$40\% de ausencia por canal
+        \item Tabulares: $\sim$20\% de ausencia por feature
       \end{itemize}
 
       \medskip
-      \textbf{2. Clasificación de supervivencia}
-      \begin{itemize}
-        \item ViT congelado
-        \item \textit{Label smoothing} 0.1
-        \item \textit{Cosine annealing} + \textit{early stopping}
-        \item \textit{Batch} 16, AdamW $lr = 10^{-4}$
-      \end{itemize}
+      \begin{block}{Estrategia train vs.\ test}
+        \small \textit{Dynamic dropout} en entrenamiento: tasa variable para mejorar robustez. \textit{Static dropout} fijo en test para garantizar reproducibilidad.
+      \end{block}
     \end{column}
   \end{columns}
 \end{frame}
@@ -474,155 +386,123 @@
 % ============================================================
 \section{Resultados}
 
-\begin{frame}{Resultados --- Ablación de mejoras}
+\begin{frame}{Resultados — BraTS}
   \centering
-  \small
-  \begin{tabular}{clcccc}
+  \begin{tabular}{llcc}
     \toprule
-    \textbf{Paso} & \textbf{Cambio introducido} & \textbf{F1} & \textbf{Prec.} & \textbf{Rec.} & $\boldsymbol{\Delta}$ \textbf{F1} \\
+    \textbf{Máscara} & \textbf{Radiómicos} & \textbf{F1} \\
     \midrule
-    0b & Baseline (UPenn SSL)                          & 0.6518 & 0.6657 & 0.6557 & --- \\
-    1  & + \textit{Mask wiring}                        & 0.6382 & 0.6426 & 0.6393 & \bad{$-$0.0136} \\
-    3  & + Normalización tabular $[-1, 1]$             & 0.6407 & 0.6926 & 0.6557 & \bad{$-$0.0111} \\
-    5  & + \textit{Embeddings} posicionales 3D ($6^3$) & 0.6601 & 0.7057 & 0.6721 & \good{$+$0.0083} \\
-    \rowcolor{lightbg}
-    6  & + Aumentaciones de intensidad BraTS           & \textbf{0.6640} & 0.6946 & 0.6721 & \good{$+$0.0039} \\
+    All   & No & \textbf{0.660} \\
+    Test  & Sí & 0.656 \\
+    All   & Sí & 0.652 \\
+    Train & No & 0.645 \\
+    Test  & No & 0.622 \\
+    Train & Sí & 0.605 \\
+    None  & No & 0.616 \\
+    None  & Sí & 0.603 \\
     \bottomrule
   \end{tabular}
 
-  \vspace{0.7em}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Mejora acumulada sobre el baseline}
-        \centering\small
-        \begin{tabular}{lcc}
-          \toprule
-          \textbf{Métrica} & \textbf{Baseline} & \textbf{Final} \\
-          \midrule
-          F1         & 0.6518 & \textbf{0.6640} \good{(+0.012)} \\
-          Precisión  & 0.6657 & \textbf{0.6946} \good{(+0.029)} \\
-          \textit{Recall} & 0.6557 & \textbf{0.6721} \good{(+0.016)} \\
-          \bottomrule
-        \end{tabular}
-      \end{block}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Observaciones clave}
-        \small
-        \begin{itemize}
-          \item Los \textit{embeddings} 3D son la mejora individual de mayor impacto
-          \item El \textit{mask wiring} requiere más épocas para converger
-          \item El SSL con BraTS pierde estabilidad pasadas $\sim$20 épocas
-        \end{itemize}
-      \end{block}
-    \end{column}
-  \end{columns}
+  \vspace{0.8em}
+  {\small La combinación \textbf{All No} obtiene el mejor F1 (0.660) en BraTS.}
 \end{frame}
 
-\begin{frame}{Resultados --- Efecto del \textit{data dropout}}
+
+\begin{frame}{Resultados — UPenn}
   \centering
-  \small
-  \begin{tabular}{cccc}
+  \begin{tabular}{llc}
     \toprule
-    \textbf{Dropout Train} & \textbf{Dropout Test} & \textbf{F1 (\%)} & \textbf{F1 con radiómicos (\%)} \\
+    \textbf{Máscara} & \textbf{Radiómicos} & \textbf{F1} \\
     \midrule
-    No  & No  & 63.38 & 58.55 \\
-    Sí  & No  & 59.21 & 53.40 \\
-    \rowcolor{lightbg}
-    No  & Sí  & \textbf{68.47} & 59.56 \\
-    Sí  & Sí  & 63.04 & 51.75 \\
+    All   & No & \textbf{0.639} \\
+    All   & Sí & 0.621 \\
+    Test  & No & 0.607 \\
+    None  & Sí & 0.607 \\
+    Train & No & 0.605 \\
+    Test  & Sí & 0.587 \\
+    None  & No & 0.567 \\
+    Train & Sí & 0.565 \\
     \bottomrule
   \end{tabular}
 
-  \vspace{0.7em}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Lecciones sobre dropout}
-        \small
-        \begin{itemize}
-          \item \textit{Dynamic dropout} en \textit{train} introduce ruido excesivo y degrada el rendimiento
-          \item Solo aplicarlo en test mejora el F1 hasta $\sim$68\%
-          \item El \textit{batch size} 32 resulta crítico para el SSL contrastivo
-        \end{itemize}
-      \end{block}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{block}{El papel de los radiómicos}
-        \small
-        \begin{itemize}
-          \item Con datos completos añaden algo de ruido al modelo
-          \item Con datos faltantes aportan \textbf{señal complementaria} --- exactamente su rol diseñado
-          \item La diferencia se reduce a mayor nivel de dropout
-        \end{itemize}
-      \end{block}
-    \end{column}
-  \end{columns}
-
-  \vspace{0.3em}
-  {\scriptsize Nota: estos resultados corresponden a una versión previa del \textit{split} y no son directamente comparables con la ablación anterior.}
+  \vspace{0.8em}
+  {\small La combinación \textbf{All No} obtiene el mejor F1 (0.639) en UPenn.}
 \end{frame}
 
 % ============================================================
-\section{Discusión y conclusiones}
-
-\begin{frame}{Discusión}
+\begin{frame}{Ablación --- Contribución de cada modalidad}
   \begin{columns}[T]
-    \begin{column}{0.50\textwidth}
-      \textbf{\good{Fortalezas}}
-      \begin{itemize}
-        \item Fusión multimodal $>$ cualquier modalidad por separado
-        \item El \textit{sigmoid gate} aprovecha los radiómicos sin degradar cuando faltan
-        \item Los \textit{embeddings} 3D mejoran la representación espacial del tumor
-        \item Aceptamos \textit{cualquier} combinación de entradas sin reentrenar
-        \item El SSL sobre BraTS aporta diversidad de dominio
-      \end{itemize}
+    \begin{column}{0.62\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{images/results_ablation.png}
     \end{column}
-    \begin{column}{0.50\textwidth}
-      \textbf{\bad{Debilidades}}
+    \begin{column}{0.35\textwidth}
+      \small
       \begin{itemize}
-        \item El \textit{dynamic dropout} en \textit{train} es demasiado agresivo
-        \item El SSL con BraTS colapsa pasadas $\sim$20 épocas (loss contrastiva)
-        \item Dataset modesto (482 train): generalización limitada
-        \item La clasificación binaria descarta granularidad temporal
-        \item \textit{Mask wiring} converge lento --- necesita más épocas
+        \item Sin tabulares: \bad{notable caída de F1}. Modalidad más crítica
+        \item Entrenar con radiómicos \good{mitiga} la falta de clínicos
+        \item Predecir con radiómicos \bad{empeora}: el gate no los suprime
+        \item Entrenar con dropout \good{mejora} en la mayoría de configuraciones
       \end{itemize}
+
     \end{column}
   \end{columns}
-
-  \vspace{0.7em}
-  \begin{center}
-    \begin{exampleblock}{Hallazgo principal}
-      \centering\small
-      No hacen falta ramas condicionales para manejar datos faltantes.\\
-      \textbf{Máscaras aprendidas + \textit{sigmoid gate}} bastan para que la red\\decida qué información usar en cada caso.
-    \end{exampleblock}
-  \end{center}
 \end{frame}
+
+% ============================================================
+\begin{frame}{Ablación — BraTS, All Masks}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/ablation_brats_all_mask.png}
+\end{frame}
+
+\begin{frame}{Ablación — BraTS, Sin Máscaras}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/ablation_brats_no_mask.png}
+\end{frame}
+
+\begin{frame}{Ablación — UPenn, All Masks}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/ablation_upenn_all_mask.png}
+\end{frame}
+
+\begin{frame}{Ablación — UPenn, Sin Máscaras}
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/ablation_upenn_no_mask.png}
+\end{frame}
+
+% ============================================================
+\section{Conclusiones y trabajo futuro}
 
 \begin{frame}{Conclusiones y trabajo futuro}
   \begin{columns}[T]
     \begin{column}{0.50\textwidth}
       \textbf{Conclusiones}
       \begin{enumerate}
-        \item Arquitectura multimodal robusta que integra MRI, radiómicos y datos clínicos
-        \item Datos faltantes gestionados \textbf{sin condicionales}: máscaras + \textit{gates} aprendidos
-        \item Los radiómicos aportan señal complementaria cuando faltan canales MRI
-        \item \textit{Embeddings} posicionales 3D y aumentaciones BraTS mejoran la base
-        \item Mejora acumulada de \hl{+0.012 F1} sobre el baseline propio
+        \item Modelo multimodal capaz de integrar MRI, datos clínicos y radiómicos de forma conjunta
+        \item El modelo es robusto ante datos faltantes
+        \item Se alcanza un F1 comparable al baseline pese a la mayor complejidad del problema
+        \item El estudio ablacional confirma que los datos clínicos son la modalidad más crítica, y que los radiómicos mitigan su ausencia
       \end{enumerate}
     \end{column}
+
     \begin{column}{0.50\textwidth}
       \textbf{Trabajo futuro}
       \begin{enumerate}
-        \item Pretraining SSL con más datasets (UCSF-PDGM, RHUH)
-        \item \textit{Curriculum learning} sobre el dropout durante \textit{train}
-        \item Predicción de curva de supervivencia (DeepHit) en lugar de binaria
-        \item Validación con datos reales de centros con ausencias auténticas
-        \item Análisis de qué modalidades son verdaderamente imprescindibles
-        \item Destilar el modelo para despliegue clínico eficiente
+        \item Explorar mecanismos de fusión que superen el \textit{gated fusion} actual
+        \item Estudiar si el \textit{gate} aprende a suprimir los radiómicos en inferencia cuando no aportan información adicional a la imagen
+        \item Ampliar la tarea a regresión de supervivencia
+        \item Validar el modelo en centros externos para comprobar la generalización
       \end{enumerate}
     \end{column}
   \end{columns}
+
+  \vspace{0.3cm}
+
+  \begin{block}{Aporte principal}
+      \footnotesize
+    El principal aporte no es superar el estado del arte, sino demostrar que un único modelo puede tolerar ausencias arbitrarias de modalidades de forma aprendida, lo que lo hace directamente aplicable al entorno clínico real.
+  \end{block}
+
 \end{frame}
 
 % ============================================================
@@ -637,7 +517,6 @@
   \vspace{0.4cm}
   {\small Máster en Inteligencia Artificial, Reconocimiento de Formas e Imagen Digital\\
   Universitat Politècnica de València}
-
 \end{frame}
 
 \end{document}
