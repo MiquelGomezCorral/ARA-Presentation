@@ -267,7 +267,7 @@
 
 % ============================================================
 \begin{frame}{Dataset Extra: BraTS 2021}
-  \begin{columns}[T]
+  \begin{columns}[c] % Changed from [T] to [c] for vertical centering
     \begin{column}{0.50\textwidth}
       \centering\footnotesize
       \begin{tabular}{lr}
@@ -280,23 +280,20 @@
         Segmentación           & Disponible (no usada) \\
         \bottomrule
       \end{tabular}
-
-  \end{column}
-  \begin{column}{0.46\textwidth}
-    \begin{block}{Autosupervisado en BraTS}
-      \small
-      
-      \begin{itemize}
-        \item Tiene el mismo formato: También está sin cráneo.
-        \item Contiene $\times2$ datos que UPenn + diversidad multi-institucional\\
-        \item Mejor representación espacial y generalización.
-      \end{itemize}
+    \end{column}
+    
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Autosupervisado en BraTS}
+        \small
+        \begin{itemize}
+          \item Tiene el mismo formato: También está sin cráneo.
+          \item Contiene $\times2$ datos que UPenn + diversidad multi-institucional
+          \item Mejor representación espacial y generalización.
+        \end{itemize}
       \end{block}
-
     \end{column}
   \end{columns}
 \end{frame}
-
 
 % ============================================================
 \section{Descripción de la tarea}
