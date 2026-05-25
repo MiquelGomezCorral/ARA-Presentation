@@ -56,9 +56,9 @@
 % Title
 % ============================================================
 \title[Clasificación multimodal robusta]{Clasificación multimodal de esperanza de vida\\\large con robustez ante datos faltantes}
-\subtitle{ARA}
+\subtitle{}
 \author[Gómez \& Pacheco]{Andrés Pacheco Millán \and Miquel Gómez Corral}
-\institute[UPV]{Máster en Inteligencia Artificial,
+\institute[UPV]{Máster Universitario en Inteligencia Artificial,
            Reconocimiento de Formas e Imagen Digital\\
            Universitat Politècnica de València}
 \date{}
@@ -80,14 +80,15 @@
     \begin{column}{0.48\textwidth}
       \begin{enumerate}
         \item Introducción y motivación
-        \item Trabajo relacionado
-        \item Descripción de la tarea
         \item Dataset
-        \item Arquitectura del modelo
+        \item Descripción de la tarea
+        \item Trabajo relacionado
+        \item Preprocesado 
       \end{enumerate}
     \end{column}
     \begin{column}{0.48\textwidth}
       \begin{enumerate}\setcounter{enumi}{5}
+        \item Arquitectura del modelo
         \item Nuestras contribuciones
         \item Diseño experimental
         \item Resultados
@@ -101,7 +102,7 @@
 \section{Introducción y motivación}
 
 \begin{frame}{Introducción y motivación}
-    En la práctica clínica \hl{rara vez se dispone de todos los datos} de un paciente al momento de decidir.
+    En la práctica clínica \hl{no siempre se dispone de todos los datos} de un paciente al momento de decidir.
 
     \medskip
     \textbf{¿Por qué faltan datos?}
@@ -132,11 +133,9 @@
         Edad media              & 62.7 $\pm$ 12.5 años \\
         Género (M\,/\,F)        & 378 / 252 \\
         Supervivencia media     & 496 días \\
+        Clínicos                & KPS, IDH1, MGMT, GTR \\
         \midrule
-        \rowcolor{lightbg}
-        \textbf{Clase 0 ($\leq$12m)} & \textbf{305} \\
-        \rowcolor{lightbg}
-        \textbf{Clase 1 ($>$12m)}    & \textbf{339} \\
+        Radiómicos              & 144 por región (ED, ET, NC) \\
         \bottomrule
       \end{tabular}
 
@@ -167,6 +166,137 @@
   \end{columns}
 \end{frame}
 
+% ============================================================
+\section{Dataset}
+
+\begin{frame}{Dataset UPenn-GBM}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \centering\footnotesize
+      \begin{tabular}{lr}
+        \toprule
+        \textbf{Variable} & \textbf{Valor} \\
+        \midrule
+        Pacientes / muestras    & 603 / 630 \\
+        Edad media              & 62.7 $\pm$ 12.5 años \\
+        Género (M\,/\,F)        & 378 / 252 \\
+        Supervivencia media     & 496 días \\
+        Clínicos                & KPS, IDH1, MGMT, GTR \\
+        \midrule
+        Radiómicos              & 144 por región (ED, ET, NC) \\
+        \bottomrule
+      \end{tabular}
+
+      \vspace{0.8em}
+      \begin{tabular}{lrr}
+        \toprule
+        \textbf{Split} & \textbf{Pacientes} & \textbf{\%} \\
+        \midrule
+        Entrenamiento & 482 & 80\% \\
+        Validación    &  60 & 10\% \\
+        Test          &  61 & 10\% \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \includegraphics[width=\textwidth]{images/UPENN-GBM-00465.png}
+
+      \begin{block}{Clínicos}
+        \small
+        \begin{itemize}
+          \item \textbf{KPS}: Independencia física del paciente.
+          \item \textbf{IDH1}: Estado de mutación.
+          \item \textbf{MGMT}: Efectividad quimioterapia.
+          \item \textbf{GTR}: Éxito extirpación completa.
+        \end{itemize}
+        \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Dataset}
+
+\begin{frame}{Dataset UPenn-GBM}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \centering\footnotesize
+      \begin{tabular}{lr}
+        \toprule
+        \textbf{Variable} & \textbf{Valor} \\
+        \midrule
+        Pacientes / muestras    & 603 / 630 \\
+        Edad media              & 62.7 $\pm$ 12.5 años \\
+        Género (M\,/\,F)        & 378 / 252 \\
+        Supervivencia media     & 496 días \\
+        Clínicos                & KPS, IDH1, MGMT, GTR \\
+        \midrule
+        Radiómicos              & 144 por región (ED, ET, NC) \\
+        \bottomrule
+      \end{tabular}
+
+      \vspace{0.8em}
+      \begin{tabular}{lrr}
+        \toprule
+        \textbf{Split} & \textbf{Pacientes} & \textbf{\%} \\
+        \midrule
+        Entrenamiento & 482 & 80\% \\
+        Validación    &  60 & 10\% \\
+        Test          &  61 & 10\% \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=0.7\textwidth]{images/radiomic_segmentation.png}
+
+      \begin{block}{Radiomicos}
+        \small
+        \begin{itemize}
+          \item Autosegmentación de tumor en regiones ED, ET, NC:
+          \item \textbf{ED}: Edema peritumoral.
+          \item \textbf{ET}: Tumor activo (tejido que capta contraste).
+          \item \textbf{NC}: Núcleo necrótico (tejido muerto).
+        \end{itemize}
+        \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+% ============================================================
+\begin{frame}{Dataset Extra: BraTS 2021}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \centering\footnotesize
+      \begin{tabular}{lr}
+        \toprule
+        \textbf{Variable} & \textbf{Valor} \\
+        \midrule
+        Pacientes              & 1251 \\
+        Secuencias MRI         & 4 (T1, T1ce, T2, FLAIR) \\
+        Preprocesado           & Alineado, sin cráneo \\
+        Segmentación           & Disponible (no usada) \\
+        \bottomrule
+      \end{tabular}
+
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    \begin{block}{Autosupervisado en BraTS}
+      \small
+      
+      \begin{itemize}
+        \item Tiene el mismo formato: También está sin cráneo.
+        \item Contiene $\times2$ datos que UPenn + diversidad multi-institucional\\
+        \item Mejor representación espacial y generalización.
+      \end{itemize}
+      \end{block}
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
 
 % ============================================================
 \section{Descripción de la tarea}
@@ -188,7 +318,7 @@
 
       \medskip
       \begin{block}{El reto central}
-        \small En inferencia, \textbf{cualquier combinación de estas entradas puede estar ausente}. El modelo debe funcionar bien en todos los casos, sin lógica condicional codificada a mano.
+        \small En inferencia, \textbf{cualquier combinación de estas entradas puede estar ausente}. El modelo debe funcionar bien en todos los casos.
       \end{block}
 \end{frame}
 
@@ -225,7 +355,43 @@
 \end{frame}
 
 
+% ============================================================
+\begin{frame}{Preprocesado — Pipeline de datos}
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Imágenes}
+        \footnotesize
+        \textbf{Formato NIfTI 3D médico}
+        \begin{itemize}
+          \item Eliminación de duplicados
+          \item Redimensión a 96\textsuperscript{3}
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Radiómicos}
+        \footnotesize
+        \textbf{12 grupos: 4 mod.\ $\times$ 3 regiones (ED, ET, NC)}
+        \begin{itemize}
+          \item 144 \textit{features} por grupo
+          \item \textbf{12 scalers} independientes (uno por grupo) usando mediana/IQR --- robusto a \textit{outliers} médicos
+          \item Ajuste \textbf{solo en train} se aplica en val y test
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Tabulares}
+        \footnotesize
+        \textbf{14 features clínicas}
+        \begin{itemize}
+          \item \textbf{Continuas}: Género $\{-1,1\}$; Edad $(x/50)-1\in[-1,1]$
+          \item \textbf{Categóricas} (KPS, IDH1, MGMT, GTR) $\to$ \textit{one-hot} 
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
 
+\end{frame}
 % ============================================================
 \begin{frame}{Arquitectura — Propuesta inicial}
   \begin{columns}[T]
@@ -241,7 +407,6 @@
       \begin{itemize}
         \item Radiómicos extraídos \textbf{de la segmentación}: información redundante con la imagen MRI
         \item Sin imagen, el cross-attention \textbf{no tiene tokens} a los que atender $\to$ el módulo colapsa
-        \item La fusión no distingue si una modalidad \textbf{falta o está presente}
       \end{itemize}
     \end{column}
     \begin{column}{0.46\textwidth}
@@ -308,45 +473,13 @@
     \begin{column}{0.48\textwidth}
 
       \medskip
-      \begin{exampleblock}{Resultado}
+      \begin{exampleblock}{Idea clave}
         \small El modelo acepta \textbf{cualquier combinación de entradas} en inferencia, sin necesidad de reentrenar.
       \end{exampleblock}
     \end{column}
   \end{columns}
 \end{frame}
-% ============================================================
-\begin{frame}{Dataset Extra: BraTS 2021}
-  \begin{columns}[T]
-    \begin{column}{0.50\textwidth}
-      \centering\footnotesize
-      \begin{tabular}{lr}
-        \toprule
-        \textbf{Variable} & \textbf{Valor} \\
-        \midrule
-        Pacientes              & 1251 \\
-        Secuencias MRI         & 4 (T1, T1ce, T2, FLAIR) \\
-        Preprocesado           & Alineado, sin cráneo \\
-        Segmentación           & Disponible (no usada) \\
-        \bottomrule
-      \end{tabular}
 
-      \vspace{0.8em}
-      \begin{itemize}
-        \item Tiene el mismo formato: También está sin cráneo.
-        \item Contiene $\times2$ datos que UPenn + diversidad multi-institucional\\
-        \item Mejor representación espacial y generalización.
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.46\textwidth}
-      \begin{block}{Autosupervisado --- sin etiquetas}
-        \small
-        Las anotaciones expertas (necrosis, edema, tumor activo) \textbf{se descartan} en SSL.
-        El ViT aprende geometría y texturas cerebrales sin supervisión humana.
-      \end{block}
-
-    \end{column}
-  \end{columns}
-\end{frame}
 
 % ============================================================
 \section{Diseño experimental}
@@ -357,12 +490,12 @@
       \textbf{Fase 1 — Pretraining SSL}
       \begin{itemize}
         \item \textit{Contrastive learning} y \textit{Context reconstruction}
-        \item BraTS 2021: 1251
-        \item Upenn-GBM.
+        \item BraTS 2021: 1251 Muestras
+        \item Upenn-GBM: 482 Muestras
       \end{itemize}
 
       \medskip
-      \textbf{Fase 2 — Clasificación}
+      \textbf{Fase 2 — Entrenamiento completo}
       \begin{itemize}
         \item ViT congelado, 5 épocas
         \item Pocas épocas para evitar que el modelo sobreajuste en validación
@@ -377,7 +510,11 @@
 
       \medskip
       \begin{block}{Estrategia train vs.\ test}
-        \small \textit{Dynamic dropout} en entrenamiento: tasa variable para mejorar robustez. \textit{Static dropout} fijo en test para garantizar reproducibilidad.
+        \small
+        \begin{itemize}
+        \item  \textbf{Dynamic dropout} en entrenamiento \\ 
+        \item \textbf{Static dropout} fijo en test para garantizar reproducibilidad.
+        \end{itemize}
       \end{block}
     \end{column}
   \end{columns}
@@ -398,7 +535,7 @@
     Train & No & 0.645 \\
     Test  & No & 0.622 \\
     Train & Sí & 0.605 \\
-    None  & No & 0.616 \\
+    None  & No & \textbf{0.616} \\
     None  & Sí & 0.603 \\
     \bottomrule
   \end{tabular}
@@ -420,7 +557,7 @@
     None  & Sí & 0.607 \\
     Train & No & 0.605 \\
     Test  & Sí & 0.587 \\
-    None  & No & 0.567 \\
+    None  & No & \textbf{0.567} \\
     Train & Sí & 0.565 \\
     \bottomrule
   \end{tabular}
@@ -491,7 +628,7 @@
         \item Explorar mecanismos de fusión que superen el \textit{gated fusion} actual
         \item Estudiar si el \textit{gate} aprende a suprimir los radiómicos en inferencia cuando no aportan información adicional a la imagen
         \item Ampliar la tarea a regresión de supervivencia
-        \item Validar el modelo en centros externos para comprobar la generalización
+        \item Validar el modelo en datasets externos para comprobar la generalización
       \end{enumerate}
     \end{column}
   \end{columns}
